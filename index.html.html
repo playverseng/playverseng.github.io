@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PlayVerse® — More Than Just Games. It's an Experience.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+  :root {
+    --black: #06080F;
+    --dark: #0A0D18;
+    --card: #0F1422;
+    --border: rgba(100,130,255,0.1);
+    --cyan: #4D8EFF;
+    --blue: #1A4FD4;
+    --accent: #6BA3FF;
+    --cyan-dim: rgba(77,142,255,0.12);
+    --white: #EDF1FF;
+    --grey: #5A6480;
+    --mid: #8E9AB8;
+    --radius-sm: 0px;
+    --radius-md: 0px;
+    --radius-lg: 0px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* CUSTOM CURSOR */
+  .cursor {
+    width: 12px; height: 12px;
+    background: var(--cyan);
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+    mix-blend-mode: difference;
+  }
+  .cursor-ring {
+    width: 36px; height: 36px;
+    border: 1px solid rgba(77,142,255,0.5);
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9998;
+    transition: transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94);
+  }
+  a:hover ~ .cursor, button:hover ~ .cursor { transform: scale(2.5); }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 20px 40px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: linear-gradient(to bottom, rgba(8,10,15,0.95) 0%, transparent 100%);
+    backdrop-filter: blur(2px);
+  }
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: 0.08em;
+    color: var(--white);
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--cyan); }
+  .nav-links {
+    display: flex; gap: 32px; list-style: none;
+  }
+  .nav-links a {
+    color: var(--mid);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--cyan); }
+  .nav-cta {
+    background: var(--cyan);
+    color: var(--white);
+    border: none;
+    padding: 10px 22px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    border-radius: 0;
+  }
+  .nav-cta:hover { background: var(--accent); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(77,142,255,0.4); }
+
+  /* HERO */
+  #hero {
+    height: 100vh;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  #hero-canvas {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+  }
+  .hero-content {
+    position: relative; z-index: 10;
+    text-align: center;
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .hero-eyebrow {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 28px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.3s forwards;
+  }
+  .hero-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(64px, 10vw, 128px);
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+    color: var(--white);
+    opacity: 0;
+    animation: fadeUp 0.9s 0.5s forwards;
+    position: relative;
+  }
+  .hero-title .grad {
+    background: linear-gradient(135deg, var(--cyan) 0%, var(--blue) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-sub {
+    font-style: italic;
+    color: var(--accent);
+    letter-spacing: 0.01em;
+    margin-top: 24px;
+    font-size: clamp(15px, 2vw, 18px);
+
+    max-width: 480px;
+    line-height: 1.6;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.7s forwards;
+  }
+  .hero-actions {
+    margin-top: 40px;
+    display: flex; gap: 16px;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.9s forwards;
+  }
+  .btn-primary {
+    background: var(--cyan);
+    color: var(--white);
+    padding: 14px 32px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: none; cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+    border-radius: 0;
+  }
+  .btn-primary:hover { background: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(77,142,255,0.4); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--white);
+    padding: 14px 32px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: 1px solid rgba(255,255,255,0.15);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+    border-radius: 0;
+  }
+  .btn-ghost:hover { border-color: var(--cyan); color: var(--cyan); }
+
+  .hero-scroll {
+    position: absolute; bottom: 40px; left: 50%;
+    transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    opacity: 0;
+    animation: fadeUp 1s 1.2s forwards;
+  }
+  .hero-scroll span {
+    font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--grey);
+  }
+  .scroll-line {
+    width: 1px; height: 40px;
+    background: linear-gradient(to bottom, var(--cyan), transparent);
+    animation: scrollPulse 2s infinite;
+  }
+
+  /* MARQUEE */
+  .marquee-wrap {
+    overflow: hidden;
+    background: var(--cyan);
+    padding: 12px 0;
+    position: relative;
+  }
+  .marquee-track {
+    display: flex; gap: 0;
+    width: max-content;
+    animation: marquee 25s linear infinite;
+  }
+  .marquee-item {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--black);
+    padding: 0 32px;
+    white-space: nowrap;
+  }
+  .marquee-sep {
+    color: rgba(0,0,0,0.3);
+    padding: 0 8px;
+  }
+
+  /* SECTIONS */
+  section { padding: 100px 40px; max-width: 1200px; margin: 0 auto; }
+
+  .section-label {
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--cyan); margin-bottom: 16px;
+  }
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(32px, 5vw, 52px);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--white);
+    margin-bottom: 20px;
+  }
+  .section-body {
+    font-size: 16px; color: var(--mid); line-height: 1.7;
+    max-width: 560px;
+  }
+
+  /* STATS */
+  #stats-bar {
+    background: var(--card);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 0;
+    max-width: 100%;
+  }
+  .stats-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: grid; grid-template-columns: repeat(4,1fr);
+    padding: 0 40px;
+  }
+  .stat-item {
+    padding: 48px 0;
+    border-right: 1px solid var(--border);
+    padding-right: 40px;
+    padding-left: 40px;
+  }
+  .stat-item:first-child { padding-left: 0; }
+  .stat-item:last-child { border-right: none; }
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 44px; font-weight: 800;
+    background: linear-gradient(135deg, var(--cyan), var(--blue));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .stat-label { font-size: 13px; color: var(--grey); letter-spacing: 0.05em; }
+
+  /* ZONES */
+  #zones { max-width: 100%; padding: 100px 0; }
+  .zones-header { padding: 0 40px; max-width: 1200px; margin: 0 auto 60px; }
+  .zones-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    background: transparent;
+    max-width: 1200px; margin: 0 auto;
+  }
+  .zone-card {
+    background: var(--card);
+    padding: 48px 40px;
+    position: relative; overflow: hidden;
+    transition: all 0.3s;
+    cursor: default;
+    border-radius: 0;
+    border: 1px solid var(--border);
+  }
+  .zone-card::before {
+    content: '';
+    position: absolute; inset: 0;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .zone-card:hover::before { opacity: 1; }
+  .zone-card:hover { transform: translateY(-2px); }
+
+  .zone-card.gamevere::before { background: linear-gradient(135deg, rgba(77,142,255,0.06) 0%, transparent 60%); }
+  .zone-card.mindverse::before { background: linear-gradient(135deg, rgba(156,39,176,0.08) 0%, transparent 60%); }
+  .zone-card.snackverse::before { background: linear-gradient(135deg, rgba(255,160,0,0.08) 0%, transparent 60%); }
+
+  .zone-phase {
+    font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+    font-weight: 600; margin-bottom: 20px; display: inline-block;
+    padding: 4px 10px;
+    border-radius: 0;
+  }
+  .phase-1 { background: rgba(77,142,255,0.15); color: var(--accent); }
+  .phase-2 { background: rgba(255,255,255,0.05); color: var(--grey); }
+
+  .zone-icon {
+    font-size: 36px; margin-bottom: 20px; display: block;
+    filter: drop-shadow(0 0 12px currentColor);
+  }
+  .zone-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800; font-size: 22px;
+    color: var(--white); margin-bottom: 12px;
+    letter-spacing: -0.01em;
+  }
+  .zone-desc { font-size: 14px; color: var(--mid); line-height: 1.6; margin-bottom: 24px; }
+
+  .zone-accent-line {
+    width: 40px; height: 2px;
+    margin-bottom: 20px;
+  }
+  .zone-tag {
+    display: inline-block;
+    font-size: 11px; font-weight: 500;
+    padding: 4px 12px;
+    background: rgba(77,142,255,0.08);
+    color: var(--mid);
+    margin: 3px 3px 0 0;
+    border-radius: 0;
+    border: 1px solid rgba(77,142,255,0.15);
+  }
+
+  /* PRICING */
+  #pricing { max-width: 1200px; }
+  .pricing-grid {
+    display: grid; grid-template-columns: repeat(3,1fr);
+    gap: 16px; background: transparent;
+    margin-top: 60px;
+  }
+  .price-card {
+    background: var(--card);
+    padding: 40px 32px;
+    position: relative; transition: all 0.3s;
+    border-radius: 0;
+    border: 1px solid var(--border);
+  }
+  .price-card.featured {
+    background: linear-gradient(135deg, rgba(77,142,255,0.1) 0%, var(--card) 60%);
+    border: 1px solid rgba(77,142,255,0.4);
+  }
+  .price-badge {
+    font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+    font-weight: 700; color: var(--cyan);
+    margin-bottom: 16px; display: block;
+  }
+  .price-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px; font-weight: 800;
+    color: var(--white); margin-bottom: 8px;
+  }
+  .price-amount {
+    font-family: 'Syne', sans-serif;
+    font-size: 40px; font-weight: 800;
+    color: var(--white); line-height: 1;
+    margin-bottom: 4px;
+  }
+  .price-amount span { font-size: 16px; font-weight: 400; color: var(--grey); }
+  .price-note { font-size: 12px; color: var(--grey); margin-bottom: 28px; }
+  .price-features { list-style: none; margin-bottom: 32px; }
+  .price-features li {
+    font-size: 13px; color: var(--mid);
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .price-features li::before {
+    content: '→';
+    color: var(--cyan); font-size: 11px;
+  }
+
+  /* HOURS */
+  #hours {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 80px; align-items: center;
+    max-width: 1200px; padding: 100px 40px;
+  }
+  .hours-table {
+    border: 1px solid var(--border);
+    overflow: hidden;
+    border-radius: 0;
+  }
+  .hours-row {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    border-bottom: 1px solid var(--border);
+  }
+  .hours-row:last-child { border-bottom: none; }
+  .hours-row.header {
+    background: rgba(77,142,255,0.05);
+  }
+  .hours-cell {
+    padding: 16px 20px;
+    font-size: 13px; color: var(--mid);
+    border-right: 1px solid var(--border);
+  }
+  .hours-cell:last-child { border-right: none; }
+  .hours-row.header .hours-cell {
+    font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+    font-weight: 600; color: var(--grey);
+  }
+  .hours-highlight {
+    color: var(--white) !important; font-weight: 500;
+  }
+  .vibe-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 40px;
+    border-radius: 0;
+  }
+  .vibe-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px; font-weight: 800;
+    line-height: 1.2; margin-bottom: 20px;
+  }
+  .vibe-sub { font-size: 14px; color: var(--mid); line-height: 1.6; margin-bottom: 28px; }
+  .vibe-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .vibe-tag {
+    padding: 6px 14px;
+    background: rgba(77,142,255,0.08);
+    border: 1px solid rgba(77,142,255,0.15);
+    font-size: 12px; color: var(--mid);
+    letter-spacing: 0.05em;
+    border-radius: 0;
+  }
+
+  /* FOUNDING MEMBER */
+  #founding {
+    max-width: 100%;
+    background: var(--card);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 0;
+  }
+  .founding-inner {
+    max-width: 1200px; margin: 0 auto;
+    padding: 100px 40px;
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 80px; align-items: center;
+  }
+  .founding-callout {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(28px, 4vw, 48px);
+    font-weight: 800; line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+  .founding-callout em {
+    font-style: normal;
+    background: linear-gradient(135deg, var(--cyan), var(--blue));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .founding-right { }
+  .founding-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 64px; font-weight: 800;
+    background: linear-gradient(135deg, var(--cyan), var(--blue));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .founding-value-sub { font-size: 14px; color: var(--grey); margin-bottom: 24px; }
+  .founding-perks { list-style: none; margin-bottom: 32px; }
+  .founding-perks li {
+    font-size: 14px; color: var(--mid);
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+    display: flex; gap: 12px; align-items: center;
+  }
+  .founding-perks li::before { content: '✦'; color: var(--cyan); font-size: 10px; }
+
+  /* CONTACT */
+  #contact {
+    max-width: 700px; margin: 0 auto;
+    padding: 100px 40px;
+    text-align: center;
+  }
+  .contact-form {
+    margin-top: 48px;
+    text-align: left;
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-field {
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .form-field label {
+    font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    font-weight: 600; color: var(--grey);
+  }
+  .form-field input, .form-field select, .form-field textarea {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--white);
+    padding: 14px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+    border-radius: 0;
+  }
+  .form-field input:focus, .form-field select:focus, .form-field textarea:focus {
+    border-color: var(--cyan);
+  }
+  .form-field select { cursor: pointer; }
+  .form-field select option { background: var(--dark); }
+  .form-field textarea { resize: vertical; min-height: 100px; }
+  .form-submit {
+    background: var(--cyan);
+    color: var(--white);
+    border: none;
+    padding: 16px 32px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700; font-size: 14px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    cursor: pointer; transition: all 0.2s;
+    width: 100%;
+    border-radius: 0;
+  }
+  .form-submit:hover { background: var(--accent); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(77,142,255,0.4); }
+  .form-disclaimer {
+    font-size: 12px; color: var(--grey); text-align: center; margin-top: 8px;
+  }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px;
+    max-width: 1200px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .footer-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800; font-size: 16px;
+    letter-spacing: 0.08em;
+  }
+  .footer-logo span { color: var(--cyan); }
+  .footer-info { font-size: 12px; color: var(--grey); }
+  .footer-tagline {
+    font-size: 12px; color: var(--grey);
+    font-style: italic;
+  }
+
+  /* SCROLL REVEAL */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible {
+    opacity: 1; transform: none;
+  }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  @keyframes scrollPulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; }
+  }
+
+  /* GLOW EFFECTS */
+  .glow-cyan { text-shadow: 0 0 30px rgba(77,142,255,0.4); }
+
+  /* NOISE OVERLAY */
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.025;
+    pointer-events: none;
+    z-index: 9990;
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursor-ring"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="#hero" class="nav-logo">PLAY<span>VERSE</span>®</a>
+  <ul class="nav-links">
+    <li><a href="#zones">Zones</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#hours">Hours</a></li>
+    <li><a href="#contact">Get In</a></li>
+  </ul>
+  <a href="#founding" class="nav-cta">Founding Member</a>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-content">
+    <p class="hero-eyebrow">Bowen University · Iwo, Osun State · Opening 2027</p>
+    <h1 class="hero-title">
+      <span class="grad">PLAY</span><br>VERSE®
+    </h1>
+    <p class="hero-sub"><em>More Than Just Games...It's an Experience</em></p>
+    <div class="hero-actions">
+      <a href="#founding" class="btn-primary">Become a Founding Member</a>
+      <a href="#zones" class="btn-ghost">Explore the Zones</a>
+    </div>
+  </div>
+  <div class="hero-scroll">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track" id="marquee-track">
+    <span class="marquee-item">GameVerse <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">MindVerse <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">SnackVerse <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">VR Experiences <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">FIFA Nights <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">Bowen University <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">PS5 · 4K · Esports <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">Good Vibes <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">Good Food <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">Good Time <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">GameVerse <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">MindVerse <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">SnackVerse <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">VR Experiences <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">FIFA Nights <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">Bowen University <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">PS5 · 4K · Esports <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">Good Vibes <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">Good Food <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">Good Time <span class="marquee-sep">✦</span></span>
+  </div>
+</div>
+
+<!-- STATS -->
+<div id="stats-bar">
+  <div class="stats-inner">
+    <div class="stat-item reveal">
+      <div class="stat-num">5K+</div>
+      <div class="stat-label">Campus Students</div>
+    </div>
+    <div class="stat-item reveal reveal-delay-1">
+      <div class="stat-num">0</div>
+      <div class="stat-label">Real Competitors Within 45km</div>
+    </div>
+    <div class="stat-item reveal reveal-delay-2">
+      <div class="stat-num">6</div>
+      <div class="stat-label">PS5 Stations at Launch</div>
+    </div>
+    <div class="stat-item reveal reveal-delay-3">
+      <div class="stat-num">#1</div>
+      <div class="stat-label">Student Hangout. Period.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ZONES -->
+<div id="zones">
+  <div class="zones-header reveal">
+    <p class="section-label">The Experience</p>
+    <h2 class="section-title">Pick Your Vibe.</h2>
+    <p class="section-body">Three zones at launch. Because doing three things really well beats doing five things badly.</p>
+  </div>
+  <div class="zones-grid">
+    <!-- GameVerse -->
+    <div class="zone-card gamevere reveal">
+      <span class="zone-phase phase-1">Launch · Phase 1</span>
+      <div class="zone-accent-line" style="background: linear-gradient(90deg, #4D8EFF, #1A4FD4);"></div>
+      <span class="zone-icon" style="color: #4D8EFF;">🎮</span>
+      <h3 class="zone-name">GameVerse</h3>
+      <p class="zone-desc">6 PS5 stations. 4K displays. Ergonomic chairs. A library of the best titles. Solo, duo, or full squad — this is the main event.</p>
+      <div>
+        <span class="zone-tag">PS5 × 6</span>
+        <span class="zone-tag">4K Displays</span>
+        <span class="zone-tag">FIFA Tournaments</span>
+        <span class="zone-tag">Group Bookings</span>
+        <span class="zone-tag">Esports Ready</span>
+      </div>
+    </div>
+    <!-- MindVerse -->
+    <div class="zone-card mindverse reveal reveal-delay-1">
+      <span class="zone-phase phase-1">Launch · Phase 1</span>
+      <div class="zone-accent-line" style="background: linear-gradient(90deg, #CE93D8, #9C27B0);"></div>
+      <span class="zone-icon" style="color: #CE93D8;">🎲</span>
+      <h3 class="zone-name">MindVerse</h3>
+      <p class="zone-desc">25–30 board game titles. From Catan to Uno. Bring your crew, use your brain, forget your deadline. Low-key, high-key fun.</p>
+      <div>
+        <span class="zone-tag">Strategy Games</span>
+        <span class="zone-tag">Card Games</span>
+        <span class="zone-tag">Party Games</span>
+        <span class="zone-tag">Unlimited Time</span>
+        <span class="zone-tag">Social Space</span>
+      </div>
+    </div>
+    <!-- SnackVerse -->
+    <div class="zone-card snackverse reveal reveal-delay-2">
+      <span class="zone-phase phase-1">Launch · Phase 1</span>
+      <div class="zone-accent-line" style="background: linear-gradient(90deg, #FFD54F, #FFA000);"></div>
+      <span class="zone-icon" style="color: #FFD54F;">☕</span>
+      <h3 class="zone-name">SnackVerse & ChillVerse</h3>
+      <p class="zone-desc">Cold drinks. Affordable bites. WiFi. A spot to sit between games or just exist without studying for once.</p>
+      <div>
+        <span class="zone-tag">Cold Drinks</span>
+        <span class="zone-tag">Light Meals</span>
+        <span class="zone-tag">Free WiFi</span>
+        <span class="zone-tag">Lounge Seating</span>
+        <span class="zone-tag">Indomie O'Clock</span>
+      </div>
+    </div>
+    <!-- VR -->
+    <div class="zone-card reveal" style="background: var(--dark);">
+      <span class="zone-phase phase-2">Coming in a Few Months</span>
+      <div class="zone-accent-line" style="background: linear-gradient(90deg, rgba(255,255,255,0.2), transparent);"></div>
+      <span class="zone-icon" style="color: rgba(255,255,255,0.3); filter: none;">🥽</span>
+      <h3 class="zone-name" style="color: var(--grey);">VR Experiences</h3>
+      <p class="zone-desc" style="color: rgba(160,170,191,0.5);">Fully immersive. You'll feel it in your chest. We're saving this one for a reason — when it drops, it'll be an event.</p>
+      <div>
+        <span class="zone-tag" style="opacity:0.4;">VR Headsets</span>
+        <span class="zone-tag" style="opacity:0.4;">Immersive Sessions</span>
+        <span class="zone-tag" style="opacity:0.4;">Phase 2</span>
+      </div>
+    </div>
+    <!-- CalmVerse -->
+    <div class="zone-card reveal reveal-delay-1" style="background: var(--dark);">
+      <span class="zone-phase phase-2">Coming in a Few Months</span>
+      <div class="zone-accent-line" style="background: linear-gradient(90deg, rgba(255,255,255,0.2), transparent);"></div>
+      <span class="zone-icon" style="color: rgba(255,255,255,0.3); filter: none;">🌿</span>
+      <h3 class="zone-name" style="color: var(--grey);">CalmVerse</h3>
+      <p class="zone-desc" style="color: rgba(160,170,191,0.5);">A quiet room. No screens blasting. No tournament noise. Just you, some soft lighting, and a place to actually breathe.</p>
+      <div>
+        <span class="zone-tag" style="opacity:0.4;">Quiet Zone</span>
+        <span class="zone-tag" style="opacity:0.4;">Low Stimulation</span>
+        <span class="zone-tag" style="opacity:0.4;">Phase 2</span>
+      </div>
+    </div>
+    <!-- Placeholder -->
+    <div class="zone-card reveal reveal-delay-2" style="background: var(--dark); display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 280px;">
+      <p style="font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(107,114,128,0.5);">More Coming</p>
+      <p style="font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 800; color: rgba(107,114,128,0.15); margin-top: 8px;">???</p>
+    </div>
+  </div>
+</div>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="reveal">
+    <p class="section-label">Pricing</p>
+    <h2 class="section-title">Fair. Simple. Worth it.</h2>
+    <p class="section-body">Priced for students who actually have to budget. No hidden charges, no confusing systems. Just pay, play, repeat.</p>
+  </div>
+
+  <!-- Per-use pricing -->
+  <div style="margin-top: 60px; border: 1px solid var(--border); overflow: hidden;">
+    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; background: rgba(77,142,255,0.05); border-bottom: 1px solid var(--border);">
+      <div style="padding: 14px 24px; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--grey); font-weight: 600; border-right: 1px solid var(--border);">Service</div>
+      <div style="padding: 14px 24px; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--grey); font-weight: 600; border-right: 1px solid var(--border);">Standard</div>
+      <div style="padding: 14px 24px; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--cyan); font-weight: 600;">Members</div>
+    </div>
+    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; border-bottom: 1px solid var(--border);">
+      <div style="padding: 16px 24px; font-size: 14px; color: var(--mid); border-right: 1px solid var(--border);">PS5 Console · per person, per hour</div>
+      <div style="padding: 16px 24px; font-size: 14px; color: var(--white); font-weight: 500; border-right: 1px solid var(--border);">₦2,000</div>
+      <div style="padding: 16px 24px; font-size: 14px; color: var(--cyan); font-weight: 500;">₦1,500</div>
+    </div>
+    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; border-bottom: 1px solid var(--border);">
+      <div style="padding: 16px 24px; font-size: 14px; color: var(--mid); border-right: 1px solid var(--border);">Board Games (MindVerse) · unlimited time</div>
+      <div style="padding: 16px 24px; font-size: 14px; color: var(--white); font-weight: 500; border-right: 1px solid var(--border);">₦1,000</div>
+      <div style="padding: 16px 24px; font-size: 14px; color: var(--cyan); font-weight: 500;">₦800</div>
+    </div>
+    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; border-bottom: 1px solid var(--border);">
+      <div style="padding: 16px 24px; font-size: 14px; color: var(--mid); border-right: 1px solid var(--border);">Group Bundle · 4 players × 2 hrs console</div>
+      <div style="padding: 16px 24px; font-size: 14px; color: var(--white); font-weight: 500; border-right: 1px solid var(--border);">₦7,000</div>
+      <div style="padding: 16px 24px; font-size: 14px; color: var(--cyan); font-weight: 500;">₦5,500</div>
+    </div>
+    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr;">
+      <div style="padding: 16px 24px; font-size: 14px; color: var(--mid); border-right: 1px solid var(--border);">VR Experience · per session <span style="font-size: 11px; color: var(--grey);">(Phase 2)</span></div>
+      <div style="padding: 16px 24px; font-size: 14px; color: var(--white); font-weight: 500; border-right: 1px solid var(--border);">₦1,500–2,000</div>
+      <div style="padding: 16px 24px; font-size: 14px; color: var(--cyan); font-weight: 500;">₦1,200</div>
+    </div>
+  </div>
+
+  <!-- Membership cards -->
+  <div class="pricing-grid reveal" style="margin-top: 2px;">
+    <div class="price-card">
+      <span class="price-badge">Bronze</span>
+      <div class="price-name">Bronze Pass</div>
+      <div class="price-amount">₦5,000<span>/month</span></div>
+      <p class="price-note">Entry-level membership</p>
+      <ul class="price-features">
+        <li>Member pricing on all services</li>
+        <li>Priority booking on weekends</li>
+        <li>Access to loyalty points</li>
+        <li>WhatsApp community access</li>
+      </ul>
+      <a href="#contact" class="btn-ghost" style="width:100%; text-align:center; display:block; font-size:13px; padding: 12px;">Get Bronze</a>
+    </div>
+    <div class="price-card featured">
+      <span class="price-badge">★ Most Popular</span>
+      <div class="price-name">Silver Pass</div>
+      <div class="price-amount">₦8,000<span>/month</span></div>
+      <p class="price-note">The sweet spot</p>
+      <ul class="price-features">
+        <li>Everything in Bronze</li>
+        <li>10 hours console time monthly</li>
+        <li>2× free board game sessions</li>
+        <li>Event discounts + early access</li>
+      </ul>
+      <a href="#contact" class="btn-primary" style="width:100%; text-align:center; display:block; font-size:13px; padding: 12px;">Get Silver</a>
+    </div>
+    <div class="price-card">
+      <span class="price-badge">Gold</span>
+      <div class="price-name">Gold Pass</div>
+      <div class="price-amount">₦12,000<span>/month</span></div>
+      <p class="price-note">Unlimited mode unlocked</p>
+      <ul class="price-features">
+        <li>Everything in Silver</li>
+        <li>18 hours console time monthly</li>
+        <li>Reserved slot on FIFA nights</li>
+        <li>Snack voucher every week</li>
+      </ul>
+      <a href="#contact" class="btn-ghost" style="width:100%; text-align:center; display:block; font-size:13px; padding: 12px;">Get Gold</a>
+    </div>
+  </div>
+</section>
+
+<!-- HOURS + VIBE -->
+<div id="hours">
+  <div class="reveal">
+    <p class="section-label">Opening Hours</p>
+    <h2 class="section-title">We're open when you need us.</h2>
+    <p class="section-body" style="margin-bottom: 36px;">Built around Bowen's schedule. Curfew-safe. Sunday hours respect morning chapel.</p>
+    <div class="hours-table">
+      <div class="hours-row header">
+        <div class="hours-cell">Day</div>
+        <div class="hours-cell">Opens</div>
+        <div class="hours-cell">Closes</div>
+      </div>
+      <div class="hours-row">
+        <div class="hours-cell hours-highlight">Mon – Fri</div>
+        <div class="hours-cell">4:00 PM</div>
+        <div class="hours-cell">8:30 PM</div>
+      </div>
+      <div class="hours-row">
+        <div class="hours-cell hours-highlight">Saturday</div>
+        <div class="hours-cell">10:00 AM</div>
+        <div class="hours-cell">8:30 PM</div>
+      </div>
+      <div class="hours-row">
+        <div class="hours-cell hours-highlight">Sunday</div>
+        <div class="hours-cell">12:00 PM</div>
+        <div class="hours-cell">8:30 PM</div>
+      </div>
+    </div>
+  </div>
+  <div class="vibe-card reveal reveal-delay-1">
+    <h3 class="vibe-title">Good vibes,<br>good food,<br>good time.</h3>
+    <p class="vibe-sub">The music's clean. The space is safe. Your parents would be cool with it — but it's still genuinely fun. That's the whole point.</p>
+    <div class="vibe-tags">
+      <span class="vibe-tag">Afrobeats Instrumentals</span>
+      <span class="vibe-tag">Afrogospel</span>
+      <span class="vibe-tag">Amapiano</span>
+      <span class="vibe-tag">No Explicit Content</span>
+      <span class="vibe-tag">Faith-Aligned Space</span>
+      <span class="vibe-tag">Zero Alcohol</span>
+      <span class="vibe-tag">Student-Safe</span>
+    </div>
+  </div>
+</div>
+
+<!-- FOUNDING MEMBER -->
+<div id="founding">
+  <div class="founding-inner">
+    <div class="reveal">
+      <p class="section-label">Limited Offer</p>
+      <h2 class="founding-callout">Lock in your<br>spot <em>before</em><br>doors open.</h2>
+    </div>
+    <div class="reveal reveal-delay-1">
+      <div class="founding-value">₦15,000</div>
+      <p class="founding-value-sub">One-time Founding Member card · 15 hrs of play</p>
+      <ul class="founding-perks">
+        <li>15 hours of PS5 console time — use it whenever</li>
+        <li>Lifetime member pricing on all services</li>
+        <li>Priority access at launch and for events</li>
+        <li>Your name in the PlayVerse® founder wall</li>
+        <li>Early access to VR Experiences (Phase 2)</li>
+      </ul>
+      <a href="#contact" class="btn-primary">Secure My Founding Card</a>
+      <p style="margin-top: 12px; font-size: 12px; color: var(--grey);">Limited to 100 cards. Pre-launch only.</p>
+    </div>
+  </div>
+</div>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="reveal">
+    <p class="section-label">Get In</p>
+    <h2 class="section-title">Stay in the loop.</h2>
+    <p class="section-body" style="margin: 0 auto; text-align: center;">Sign up for launch updates, Founding Member info, and first access to tournament slots.</p>
+  </div>
+  <form class="contact-form reveal" onsubmit="handleSubmit(event)">
+    <div class="form-row">
+      <div class="form-field">
+        <label>First Name</label>
+        <input type="text" placeholder="Your name" required>
+      </div>
+      <div class="form-field">
+        <label>Matric Number</label>
+        <input type="text" placeholder="BU22MED1001">
+      </div>
+    </div>
+    <div class="form-field">
+      <label>Email / WhatsApp</label>
+      <input type="text" placeholder="email or phone number" required>
+    </div>
+    <div class="form-field">
+      <label>I'm interested in...</label>
+      <select>
+        <option>Founding Member Card (₦15,000)</option>
+        <option>Silver Membership (₦8,000/mo)</option>
+        <option>Gold Membership (₦12,000/mo)</option>
+        <option>Bronze Membership (₦5,000/mo)</option>
+        <option>Just staying updated</option>
+        <option>Sponsorship / Partnership</option>
+      </select>
+    </div>
+    <button type="submit" class="form-submit" id="submit-btn">Register Interest →</button>
+    <p class="form-disclaimer">No payment yet. We'll reach out when we're close to launch.</p>
+  </form>
+  <div id="success-msg" style="display:none; margin-top: 24px; background: rgba(77,142,255,0.08); border: 1px solid rgba(77,142,255,0.3); padding: 24px; text-align: center; border-radius: 0;">
+    <p style="font-family: 'Syne', sans-serif; font-weight: 700; font-size: 18px; color: var(--cyan); margin-bottom: 8px;">You're in. ✦</p>
+    <p style="font-size: 13px; color: var(--mid);">We'll hit you up when PlayVerse® is close to opening. Watch your inbox.</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <div class="footer-logo">PLAY<span>VERSE</span>®</div>
+    <div class="footer-info" style="margin-top: 6px;">Iwo, Osun State · Bowen University Campus · Opening 2027</div>
+  </div>
+  <p class="footer-tagline"><em>More Than Just Games...It's an Experience</em></p>
+  <p style="font-size: 11px; color: rgba(107,114,128,0.4);">© 2026 PlayVerse® LLC (CAC Registration Pending)</p>
+</footer>
+
+<script>
+// CURSOR
+const cursor = document.getElementById('cursor');
+const cursorRing = document.getElementById('cursor-ring');
+let mx = 0, my = 0, rx = 0, ry = 0;
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cursor.style.transform = `translate(${mx - 6}px, ${my - 6}px)`;
+});
+function animateRing() {
+  rx += (mx - rx) * 0.12;
+  ry += (my - ry) * 0.12;
+  cursorRing.style.transform = `translate(${rx - 18}px, ${ry - 18}px)`;
+  requestAnimationFrame(animateRing);
+}
+animateRing();
+
+// THREE.JS HERO
+(function() {
+  const canvas = document.getElementById('hero-canvas');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera.position.z = 5;
+
+  // Deep blue glow lights
+  const light1 = new THREE.PointLight(0x4D8EFF, 2, 12);
+  light1.position.set(2, 2, 3);
+  scene.add(light1);
+
+  const light2 = new THREE.PointLight(0x1A4FD4, 1.5, 12);
+  light2.position.set(-2, -1, 2);
+  scene.add(light2);
+
+  scene.add(new THREE.AmbientLight(0x080A0F, 1));
+
+  // ORBITAL RINGS around the word
+  const rings = [];
+  const ringConfigs = [
+    { radius: 2.4, tube: 0.012, tilt: 0.3, speed: 0.004, color: 0x4D8EFF, opacity: 0.6 },
+    { radius: 3.1, tube: 0.008, tilt: -0.5, speed: -0.003, color: 0x1A4FD4, opacity: 0.4 },
+    { radius: 3.8, tube: 0.006, tilt: 0.9, speed: 0.002, color: 0x6BA3FF, opacity: 0.25 },
+    { radius: 2.8, tube: 0.01, tilt: 1.2, speed: -0.005, color: 0x2563EB, opacity: 0.3 },
+  ];
+
+  ringConfigs.forEach(cfg => {
+    const geo = new THREE.TorusGeometry(cfg.radius, cfg.tube, 16, 128);
+    const mat = new THREE.MeshBasicMaterial({ color: cfg.color, transparent: true, opacity: cfg.opacity });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.rotation.x = cfg.tilt;
+    mesh.rotation.y = Math.random() * Math.PI;
+    rings.push({ mesh, speed: cfg.speed });
+    scene.add(mesh);
+  });
+
+  // PARTICLES
+  const particleCount = 280;
+  const positions = new Float32Array(particleCount * 3);
+  for (let i = 0; i < particleCount; i++) {
+    const r = 2 + Math.random() * 5;
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.random() * Math.PI;
+    positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+    positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+    positions[i * 3 + 2] = r * Math.cos(phi) - 1;
+  }
+  const pGeo = new THREE.BufferGeometry();
+  pGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  const pMat = new THREE.PointsMaterial({ color: 0x4D8EFF, size: 0.025, transparent: true, opacity: 0.5 });
+  scene.add(new THREE.Points(pGeo, pMat));
+
+  // Mouse parallax
+  let targetX = 0, targetY = 0, currentX = 0, currentY = 0;
+  document.addEventListener('mousemove', e => {
+    targetX = (e.clientX / window.innerWidth - 0.5) * 0.5;
+    targetY = (e.clientY / window.innerHeight - 0.5) * -0.3;
+  });
+
+  let t = 0;
+  function animate() {
+    requestAnimationFrame(animate);
+    t += 0.01;
+    currentX += (targetX - currentX) * 0.05;
+    currentY += (targetY - currentY) * 0.05;
+
+    rings.forEach((r, i) => {
+      r.mesh.rotation.z += r.speed;
+      r.mesh.rotation.x = ringConfigs[i].tilt + currentY * 0.3;
+    });
+
+    // Pulsing lights
+    light1.intensity = 1.8 + Math.sin(t * 1.2) * 0.4;
+    light2.intensity = 1.2 + Math.cos(t * 0.8) * 0.3;
+
+    camera.position.x = currentX * 0.8;
+    camera.position.y = currentY * 0.5;
+    camera.lookAt(0, 0, 0);
+
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+})();
+
+// SCROLL REVEAL
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+reveals.forEach(el => observer.observe(el));
+
+// FORM SUBMIT
+function handleSubmit(e) {
+  e.preventDefault();
+  document.querySelector('.contact-form').style.display = 'none';
+  document.getElementById('success-msg').style.display = 'block';
+}
+</script>
+
+</body>
+</html>
